@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制像素</title>
+</head>
+<body>
+    <div id = 'xy' style="visibility:hidden;position: absolute;margin-top:148px;margin-left:128px;" >
+        坐标
+    </div>
+    <input type="number" min="0" max="11" id='inputh' style="position: absolute;margin-top:248px;margin-left:93px;width:25px;">
+        
+    </input>
+    <input type="number" min="0" max="59" id='inputm' style="position: absolute;margin-top:248px;margin-left:133px;width:25px;">
+        
+    </input>
+    <input type="number" min="0" max="59" id='inputs' style="position: absolute;margin-top:248px;margin-left:173px;width:25px;">
+        
+    </input>
+    <div style="position: absolute;margin-top:248px;margin-left:128px;" onclick="miaobiao()">
+        :
+    </div>
+    <div style="position: absolute;margin-top:248px;margin-left:168px;" onclick="miaobiao()">
+        :
+    </div>
+
+    <div id='mb' style="position: absolute;margin-top:338px;margin-left:234px;" onclick="miaobiao()">
+        秒表
+    </div>
+    <div id='mbz' style="position: absolute;margin-top:288px;margin-left:334px;" onclick="miaobiaozanting()">
+        暂停
+    </div>
+    <div id='nzz' style="position: absolute;margin-top:288px;margin-left:134px;" onclick="naozhong()">
+        闹钟
+    </div>
+    <div id='nqh' style="position: absolute;margin-top:408px;margin-left:235px;" onclick="qiehuan()">
+        上午
+    </div>
+    <svg width="500" height="500" onclick="fixshizhen(250,450)">
+        <circle cx="250" cy="250" r="200" stroke="black" stroke-width="8" fill="white" />
+        <circle cx="250" cy="250" r="190" stroke="black" stroke-width="4" fill="white" />
+
+        <line id="miaozhen" draggable="true" x1="250" y1="250" x2="450" y2="250" stroke="red" stroke-width="4" />
+        <line id="fenzhen" draggable="true" x1="250" y1="250" x2="400" y2="250" stroke="blue" stroke-width="6" />
+        <line id="shizhen" draggable="true" x1="250" y1="250" x2="350" y2="250" stroke="black" stroke-width="8" />
+
+        <line x1="50" y1="250" x2="60" y2="250" stroke="black" stroke-width="4" />
+        <line x1="250" y1="50" x2="250" y2="60" stroke="black" stroke-width="4" />
+        <line x1="450" y1="250" x2="440" y2="250" stroke="black" stroke-width="4" />
+        <line x1="250" y1="450" x2="250" y2="440" stroke="black" stroke-width="4" />
+
+        <line x1="345" y1="414" x2="350" y2="423" stroke="black" stroke-width="4" />
+        <line x1="155" y1="86" x2="150" y2="77" stroke="black" stroke-width="4" />
+        <line x1="414" y1="345" x2="423" y2="350" stroke="black" stroke-width="4" />
+        <line x1="86" y1="155" x2="77" y2="150" stroke="black" stroke-width="4" />
+        <line x1="345" y1="86" x2="350" y2="77" stroke="black" stroke-width="4" />
+        <line x1="86" y1="345" x2="77" y2="350" stroke="black" stroke-width="4" />
+        <line x1="155" y1="414" x2="150" y2="423" stroke="black" stroke-width="4" />
+        <line x1="414" y1="155" x2="423" y2="150" stroke="black" stroke-width="4" />
+
+        <circle cx="250" cy="350" r="30" stroke="black" stroke-width="3" fill="white" onclick="miaobiao()"/>
+        <circle cx="250" cy="420" r="20" stroke="black" stroke-width="3" fill="white" onclick="qiehuan()"/>
+        <circle id = 'mbztc' cx="350" cy="300" r="30" stroke="black" stroke-width="3" fill="white" onclick="miaobiaozanting()"/>
+        <circle id = 'nz' cx="150" cy="300" r="30" stroke="black" stroke-width="3" fill="white" onclick="naozhong()"/>
+
+    </svg>
+    <div id="time" style="margin-left:150px;font-size:50px;"></div>
+    <script>
+        var mode=0; //0为系统时间，1为秒表
+        var ztmode=0;
+        var nzmode=0;
+        var mode1_basetime;
+        var cutime;
+
+        var nzh;
+        var nzm;
+        var nzs;
+
+        var h;
+        var m;
+        var s;
+        var mi;
+
+        var mouseX;
+        var mouseY;
+        var mX;
+        var mY;
+        var mouserad;
+
+        var ttimemode;
+
+        var tindtime = new Date();
+        var indtime=tindtime.getTime();
+        var tbstime = new Date();
+        var bstime =tbstime.getTime();
+        var temptime;
+
+        var finals;
+        var isdrag=0;
+
+        //indtime = 调整后h*1000*60*60+m*60*1000+s*1000;
+        //tbstime = new Date();
+        //bstime = tbstime.getTime();
+
+        document.addEventListener('mousedown', function(e) { //监听鼠标
+        if(mode===0){
+            var miaozhen = document.getElementById('miaozhen');
+            var fenzhen = document.getElementById('fenzhen');
+            var shizhen = document.getElementById('shizhen');
+
+            var x1 = miaozhen.getAttribute('x1');
+            var y1 = miaozhen.getAttribute('y1');
+            var x2 = miaozhen.getAttribute('x2');
+            var y2 = miaozhen.getAttribute('y2');
+
+            var fx1 = fenzhen.getAttribute('x1');
+            var fy1 = fenzhen.getAttribute('y1');
+            var fx2 = fenzhen.getAttribute('x2');
+            var fy2 = fenzhen.getAttribute('y2');
+
+            var sx1 = shizhen.getAttribute('x1');
+            var sy1 = shizhen.getAttribute('y1');
+            var sx2 = shizhen.getAttribute('x2');
+            var sy2 = shizhen.getAttribute('y2');
+
+            //鼠标点为mouseX,mouseY
+            var miaozhenlength = Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+            var fenzhenlength = Math.sqrt((fx2-fx1)*(fx2-fx1)+(fy2-fy1)*(fy2-fy1));
+            var shizhenlength = Math.sqrt((sx2-sx1)*(sx2-sx1)+(sy2-sy1)*(sy2-sy1));
+
+            var d1 = (mouseX-x1)*(mouseX-x1)+(mouseY-y1)*(mouseY-y1);
+            var d2 = (mouseX-x2)*(mouseX-x2)+(mouseY-y2)*(mouseY-y2);
+
+            var fd1 = (mouseX-fx1)*(mouseX-fx1)+(mouseY-fy1)*(mouseY-fy1);
+            var fd2 = (mouseX-fx2)*(mouseX-fx2)+(mouseY-fy2)*(mouseY-fy2);
+
+            var sd1 = (mouseX-sx1)*(mouseX-sx1)+(mouseY-sy1)*(mouseY-sy1);
+            var sd2 = (mouseX-sx2)*(mouseX-sx2)+(mouseY-sy2)*(mouseY-sy2);
+
+            d1 = Math.sqrt(d1);
+            d2 = Math.sqrt(d2);
+            fd1 = Math.sqrt(fd1);
+            fd2 = Math.sqrt(fd2);
+            sd1 = Math.sqrt(sd1);
+            sd2 = Math.sqrt(sd2);
+
+            if(isdrag===0 && d1+d2-miaozhenlength<4 && d1+d2-miaozhenlength>-4){
+                isdrag=1;
+            }
+            if(isdrag===0 && fd1+fd2-fenzhenlength<4 && fd1+fd2-fenzhenlength>-4){
+                isdrag=2;
+            }
+            if(isdrag===0 && sd1+sd2-shizhenlength<4 && sd1+sd2-shizhenlength>-4){
+                isdrag=3;
+            }
+        }
+        });
+
+        document.addEventListener('mousemove', function(e) { //监听鼠标
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        //x坐标等于mouseX-250,y坐标等于mouseY-250
+        mx = mouseX-250;
+        my = mouseY-250;
+        var mousexl = (my+0.0001)/(mx+0.0001);
+        mouserad = Math.atan(mousexl);
+        if(mx>0){
+            mouserad = Math.PI/2-mouserad;
+        }
+        else{
+            mouserad = 3*Math.PI/2-mouserad;
+        }
+        
+        //打印坐标
+        myxy = document.getElementById('xy');
+        myxy.textContent = mx + ',' + my
+
+        //拖动
+        if(isdrag===1 && mode===0){ //秒针
+
+            var rad = mouserad;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*200;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*200; 
+            var line = document.getElementById('miaozhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', 500-si);
+
+            var finalm = Math.floor((Math.PI-rad)*30/Math.PI);
+            if (finalm<0){
+                finalm=60+finalm;
+            }
+            s = (finalm).toString();
+            if (s.length<2){
+                s='0'+s;
+            }
+            document.getElementById('time').textContent = h + ':' + m + ':' + s;
+            //得到拨动后的当前时间
+            bstime = parseInt(h)*1000*60*60+parseInt(m)*60*1000+parseInt(s)*1000-8000*60*60;
+            tindtime = new Date();
+            indtime = tindtime.getTime();
+
+        }
+        if(isdrag===2 && mode===0){ //分针
+
+            var rad = mouserad;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*150;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*150; 
+            var line = document.getElementById('fenzhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', 500-si);
+
+            var finalf = Math.floor((Math.PI-rad)*30/Math.PI);
+            if (finalf<0){
+                finalf=60+finalf;
+            }
+            m = (finalf).toString();
+            if (m.length<2){
+                m='0'+m;
+            }
+            document.getElementById('time').textContent = h + ':' + m + ':' + s;
+            //得到拨动后的当前时间
+            bstime = parseInt(h)*1000*60*60+parseInt(m)*60*1000+parseInt(s)*1000-8000*60*60;
+            tindtime = new Date();
+            indtime = tindtime.getTime();
+
+        }
+        if(isdrag===3 && mode===0){ //时针
+
+            var rad = mouserad;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*100;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*100; 
+            var line = document.getElementById('shizhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', 500-si);
+
+            var finals = Math.floor((Math.PI-rad)*6/Math.PI);
+            if (finals<0){
+                finals=12+finals;
+            }
+            if(timemode===0){
+                finals=finals%12;
+            }
+            else{
+                finals=finals%12+12;
+            }
+            h = (finals).toString();
+            if (h.length<2){
+                h='0'+h;
+            }
+            document.getElementById('time').textContent = h + ':' + m + ':' + s;
+            //得到拨动后的当前时间
+            bstime = parseInt(h)*1000*60*60+parseInt(m)*60*1000+parseInt(s)*1000-8000*60*60;
+            tindtime = new Date();
+            indtime = tindtime.getTime();
+
+        }
+        });
+
+        document.addEventListener('mouseup', function(e) { //监听鼠标
+            isdrag = 0;
+        });
+
+        document.getElementById('miaozhen').addEventListener('drag', function(e) {
+            alert("正在拖动")
+            mysz = document.getElementById('shizhen');
+            szx = mysz.getAttribute('x2')-250;
+            szy = mysz.getAttribute('y2')-250;
+            szxl = szy/szx
+            sangle = math.degrees(math.atan(szxl))
+            if (szx > 0){
+                sangle = 90 - sangle
+            }
+            else{
+                sangle = 270 - sangle
+            }
+            var finals = sangle/30
+
+            myfz = document.getElementById('fenzhen');
+            fzx = myfz.getAttribute('x2')-250;
+            fzy = myfz.getAttribute('y2')-250;
+            fzxl= fzy/fzx
+            fangle = math.degrees(math.atan(fzxl))
+            if (fzx > 0){
+                fangle = 90 - fangle
+            }
+            else{
+                fangle = 270 - fangle
+            }
+            var finalf = fangle/6
+
+            mymz = document.getElementById('miaozhen');
+            var rad = mouserad;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*200;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*200; 
+            var line = document.getElementById('miaozhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', si);
+            mzx = mymz.getAttribute('x2')-250;
+            mzy = mymz.getAttribute('y2')-250;
+            mzxl= mzy/mzx
+            mangle = math.degrees(math.atan(mzxl))
+            if (mzx > 0){
+                mangle = 90 - mangle
+            }
+            else{
+                mangle = 270 - mangle
+            }
+            var finalm = mangle/6
+
+            h = finals.toString();
+            m = finalf.toString();
+            s = finalm.toString();
+
+            if (h.length<2){
+                h='0'+h;
+            }
+            if (m.length<2){
+                m='0'+m;
+            }
+            if (s.length<2){
+                s='0'+s;
+            }
+
+            document.getElementById('time').textContent = h + ':' + m + ':' + s;
+            //得到拨动后的当前时间
+
+            bstime = parseInt(h)*1000*60*60+parseInt(m)*60*1000+parseInt(s)*1000;
+            tindtime = new Date();
+            indtime = tindtime.getTime();
+        });
+        var timemode;
+        var cccTime = new Date();
+        if(cccTime.getHours()>=12){
+            timemode=1;
+        }
+        else{
+            timemode=0;
+        }
+        var mynqh = document.getElementById('nqh');
+        if(timemode===0){
+            mynqh.textContent='上午';
+        }
+        else{
+            mynqh.textContent='下午';  
+        }
+        function qiehuan(){
+        if(mode===0){
+            timemode=1-timemode;
+            if(timemode===0){
+            mynqh.textContent='上午';
+            }
+            else{
+            mynqh.textContent='下午';  
+            }
+        }
+        }
+        function naozhong(){
+            mynzz = document.getElementById('nzz');
+            if (nzmode===0){
+            nzmode=1;
+            mynzz.textContent='取消';
+            myinputh = document.getElementById('inputh');
+            myinputm = document.getElementById('inputm');
+            myinputs = document.getElementById('inputs');
+            nzh=myinputh.value;
+            nzm=myinputm.value;
+            nzs=myinputs.value;
+            nnnh = nzh.toString();
+            nnnm = nzm.toString();
+            nnns = nzs.toString();
+            if (nnnh.length<2){
+                nzh='0'+nnnh;
+            }
+            if (nnnm.length<2){
+                nzm='0'+nnnm;
+            }
+            if (nnns.length<2){
+                nzs='0'+nnns;
+            }
+            }
+            else{
+            mynzz.textContent='闹钟';
+            nzmode=0;
+            nzh=9999;
+            }
+        }
+        function miaobiao(){
+            mymb = document.getElementById('mb');
+            mymbz = document.getElementById('mbz');
+            mynzz = document.getElementById('nzz');
+            mynq = document.getElementById('nqh');
+            if (mode===0){
+            ttimemode=timemode;
+            timemode=0;
+            mode = 1; //秒表
+            mymb.textContent = '结束';
+            mymbz.textContent = '暂停';
+            mynzz.textContent = '';
+            mynq.textContent = '';
+            var currentTime = new Date();
+            mode1_basetime = currentTime.getTime();
+            }
+            else{
+            ztmode=0;
+            timemode=ttimemode;
+            mymb.textContent = '秒表';
+            mymbz.textContent = '';
+            mynzz.textContent = '闹钟';
+            if(timemode===0){
+            mynq.textContent='上午';
+            }
+            else{
+            mynq.textContent='下午';  
+            }
+            mode=0;
+            }
+        }
+        function miaobiaozanting(){
+            var currenTime = new Date();
+            var cmtime = currenTime.getTime();
+            mymbz = document.getElementById('mbz');
+            if (ztmode===0){
+            mymbz.textContent = '继续';
+            ztmode=1;
+            cutime = cmtime-mode1_basetime;
+            }
+            else{
+            ztmode=0;
+            mode1_basetime = cmtime-cutime;
+            mymbz.textContent = '暂停';
+            }
+        }
+        function fixsecond(s,mis){
+            var o = 6*s+0.006*mis;
+            var rad = o*Math.PI/180;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*200;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*200; 
+            var line = document.getElementById('miaozhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', si);
+        }
+        function fixminute(m,s,mis){
+            var o = 6*m+0.1*s+0.0001*mis;
+            var rad = o*Math.PI/180;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*150;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*150; 
+            var line = document.getElementById('fenzhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', si);
+        }
+        function fixhour(h,m,s,mis){
+            var o = 30*h+0.5*m+0.1*s/12+0.0001*mis/12;
+            var rad = o*Math.PI/180;
+            var co = 250+Math.cos(3*Math.PI/2+rad)*100;
+            var si = 250+Math.sin(3*Math.PI/2+rad)*100; 
+            var line = document.getElementById('shizhen');
+            line.setAttribute('x2', co);
+            line.setAttribute('y2', si);
+        }
+        function updateTime() {
+        if(isdrag===0){
+            var th = h
+            var tm = m
+            var ts = s
+            var tcurrentTime = new Date();
+            temptime = tcurrentTime.getTime();
+            // 计算得到当前时间 公式basetime+(temptime-indtime)即为当前毫秒数
+            var currentTime = new Date(bstime+temptime-indtime);
+            if (mode===0){
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds(); //o = 6*seconds度，由于指针长度为200，对应终点为cos(o) * 200,sin(o) * 200
+            var mis = currentTime.getMilliseconds();
+            }
+            if (mode===1 && ztmode===0){
+            mtime = temptime-mode1_basetime;
+            var hours = Math.floor(mtime/(1000*60*60));
+            mtime=mtime%(1000*60*60);
+            var minutes = Math.floor(mtime/(1000*60));
+            mtime=mtime%(1000*60);
+            var seconds = Math.floor(mtime/1000);
+            var mis = mtime%1000;
+            }
+            if (mode===1 && ztmode===1){
+            mtime = cutime;
+            var hours = Math.floor(mtime/(1000*60*60));
+            mtime=mtime%(1000*60*60);
+            var minutes = Math.floor(mtime/(1000*60));
+            mtime=mtime%(1000*60);
+            var seconds = Math.floor(mtime/1000);
+            var mis = mtime%1000;
+            }
+            if(timemode===0){
+                hours=hours%12;
+            }
+            else{
+                hours=hours%12+12;
+            }
+            fixsecond(seconds,mis);
+            fixminute(minutes,seconds,mis);
+            fixhour(hours,minutes,seconds,mis);
+            h = hours.toString();
+            m = minutes.toString();
+            s = seconds.toString();
+            mi = mis.toString();
+            if (h.length<2){
+                h='0'+h;
+            }
+            if (m.length<2){
+                m='0'+m;
+            }
+            if (s.length<2){
+                s='0'+s;
+            }
+            if (mis.length===1){
+                mi='00'+mi;
+            }
+            if (mis.length===2){
+                mi='0'+mi;
+            }
+
+            // 格式化时间
+            if(h==='00' && m==='00' && s==='00' && th==='11'){
+                h='12';
+                timemode=1;
+                mynqh.textContent='下午';
+            }
+            else if (h==='12' && m==='00' && s==='00' && th==='23'){
+                h='0';
+                timemode=0;
+                mynqh.textContent='上午';
+            }
+            if (mode===0){
+            mymbz = document.getElementById('mbz');
+            mymbz.textContent = '';
+            var formattedTime = h + ':' + m + ':' + s;
+            }
+            if(mode===0 && h===nzh && m===nzm && s===nzs){
+                alert('闹钟响');
+            }
+            if (mode===1){
+            var formattedTime = h + ':' + m + ':' + s + '.' + mi;
+            }
+            // 更新时间显示
+            document.getElementById('time').textContent = formattedTime;
+        }
+        }
+        setInterval(updateTime, 20);
+
+    </script>
+</body>
+</html>
